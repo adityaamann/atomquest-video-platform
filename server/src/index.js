@@ -39,18 +39,16 @@ const registerSocketHandlers = require('./socket/handlers')
 const app = express()
 const server = http.createServer(app)
 
-// Support comma-separated origins for multi-domain deploys
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
-  .split(',')
-  .map((s) => s.trim())
+const rawOrigin = process.env.CLIENT_URL || 'http://localhost:5173'
+const allowedOrigins = rawOrigin === '*' ? true : rawOrigin.split(',').map((s) => s.trim())
 
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ['GET', 'POST'], credentials: true },
+  cors: { origin: allowedOrigins, methods: ['GET', 'POST'], credentials: allowedOrigins !== true },
   maxHttpBufferSize: 5e6,
 })
 
 app.use(helmet({ crossOriginResourcePolicy: false }))
-app.use(cors({ origin: allowedOrigins, credentials: true }))
+app.use(cors({ origin: allowedOrigins, credentials: allowedOrigins !== true }))
 app.use(express.json({ limit: '1mb' }))
 
 // ── Ensure storage directories exist ─────────────────────────────────────────
