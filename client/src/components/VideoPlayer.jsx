@@ -35,7 +35,7 @@ export default function VideoPlayer({ stream, muted = false, label, className = 
       )}
 
       {stream && !videoEnabled && (
-        <div className="absolute inset-0 bg-slate-900/95 flex items-center justify-center">
+        <div className="absolute inset-0 bg-slate-900 flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-1">
               <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
