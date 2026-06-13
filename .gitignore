@@ -1,0 +1,10 @@
+node_modules/
+server/generated/
+.env
+dist/
+recordings/
+server/uploads/
+*.log
+.DS_Store
+.vercel
+prisma/migrations/

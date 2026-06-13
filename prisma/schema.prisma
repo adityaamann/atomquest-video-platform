@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  role         Role          @default(AGENT)
+  createdAt    DateTime      @default(now())
+  sessions     Session[]
+  participants Participant[]
+  messages     ChatMessage[]
+}
+
+model Session {
+  id           String        @id @default(cuid())
+  agentId      String
+  agent        User          @relation(fields: [agentId], references: [id])
+  inviteToken  String        @unique @default(cuid())
+  status       SessionStatus @default(ACTIVE)
+  startedAt    DateTime      @default(now())
+  endedAt      DateTime?
+  duration     Int?
+  participants Participant[]
+  messages     ChatMessage[]
+  recordings   Recording[]
+  summary      SessionSummary?
+
+  @@index([agentId])
+  @@index([status])
+}
+
+model Participant {
+  id        String    @id @default(cuid())
+  sessionId String
+  session   Session   @relation(fields: [sessionId], references: [id])
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  name      String
+  role      Role
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+
+  @@index([sessionId])
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id])
+  senderId   String?
+  sender     User?    @relation(fields: [senderId], references: [id])
+  senderName String
+  content    String
+  sentAt     DateTime @default(now())
+  fileUrl    String?
+  fileType   String?
+
+  @@index([sessionId])
+}
+
+model Recording {
+  id        String          @id @default(cuid())
+  sessionId String
+  session   Session         @relation(fields: [sessionId], references: [id])
+  status    RecordingStatus @default(IN_PROGRESS)
+  filePath  String?
+  createdAt DateTime        @default(now())
+
+  @@index([sessionId])
+}
+
+model SessionSummary {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  session     Session  @relation(fields: [sessionId], references: [id])
+  summary     String[]
+  sentiment   String
+  actionItems String[]
+  followUp    String
+  createdAt   DateTime @default(now())
+}
+
+enum Role {
+  AGENT
+  CUSTOMER
+}
+
+enum SessionStatus {
+  ACTIVE
+  ENDED
+}
+
+enum RecordingStatus {
+  IN_PROGRESS
+  PROCESSING
+  READY
+}
