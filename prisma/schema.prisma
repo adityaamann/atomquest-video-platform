@@ -12,6 +12,8 @@ model User {
   id           String        @id @default(cuid())
   email        String        @unique
   password     String
+  name         String?
+  company      String?
   role         Role          @default(AGENT)
   createdAt    DateTime      @default(now())
   sessions     Session[]
@@ -20,18 +22,26 @@ model User {
 }
 
 model Session {
-  id           String        @id @default(cuid())
-  agentId      String
-  agent        User          @relation(fields: [agentId], references: [id])
-  inviteToken  String        @unique @default(cuid())
-  status       SessionStatus @default(ACTIVE)
-  startedAt    DateTime      @default(now())
-  endedAt      DateTime?
-  duration     Int?
-  participants Participant[]
-  messages     ChatMessage[]
-  recordings   Recording[]
-  summary      SessionSummary?
+  id               String          @id @default(cuid())
+  agentId          String
+  agent            User            @relation(fields: [agentId], references: [id])
+  inviteToken      String          @unique @default(cuid())
+  status           SessionStatus   @default(ACTIVE)
+  startedAt        DateTime        @default(now())
+  endedAt          DateTime?
+  duration         Int?
+  title            String          @default("Support Session")
+  customerName     String          @default("")
+  customerEmail    String          @default("")
+  scheduledAt      DateTime?
+  expectedDuration Int?
+  priority         String          @default("MEDIUM")
+  description      String?
+  category         String          @default("General Inquiry")
+  participants     Participant[]
+  messages         ChatMessage[]
+  recordings       Recording[]
+  summary          SessionSummary?
 
   @@index([agentId])
   @@index([status])

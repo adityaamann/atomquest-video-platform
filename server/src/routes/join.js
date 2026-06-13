@@ -7,7 +7,7 @@ router.get('/:token', async (req, res) => {
   try {
     const session = await prisma.session.findUnique({
       where: { inviteToken: req.params.token },
-      include: { agent: { select: { id: true, email: true } } },
+      include: { agent: { select: { id: true, email: true, name: true } } },
     })
     if (!session) return res.status(404).json({ error: 'Invalid or expired invite link' })
     if (session.status === 'ENDED') return res.status(410).json({ error: 'This session has ended' })
@@ -15,6 +15,9 @@ router.get('/:token', async (req, res) => {
     res.json({
       sessionId: session.id,
       agentEmail: session.agent.email,
+      agentName: session.agent.name || session.agent.email,
+      title: session.title || 'Support Session',
+      customerName: session.customerName,
       startedAt: session.startedAt,
       token: req.params.token,
     })

@@ -116,11 +116,16 @@ export default function CustomerCall() {
 
   if (mediaError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="card max-w-md text-center">
-          <h2 className="text-lg font-semibold text-red-400 mb-2">Camera/Microphone Error</h2>
-          <p className="text-gray-400 text-sm">{mediaError}</p>
-          <p className="text-gray-500 text-xs mt-2">Allow camera/mic access and reload.</p>
+          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">Camera/Microphone Error</h2>
+          <p className="text-slate-600 text-sm">{mediaError}</p>
+          <p className="text-slate-400 text-xs mt-2">Allow camera/mic access and reload.</p>
         </div>
       </div>
     )
@@ -128,12 +133,17 @@ export default function CustomerCall() {
 
   if (sessionEnded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center page-enter">
         <div className="card max-w-md text-center">
-          <Logo size="md" className="mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Call Ended</h2>
-          <p className="text-gray-400">The support session has ended. Thank you!</p>
-          <p className="text-xs text-gray-600 mt-4">Duration: {timer.display}</p>
+          <div className="flex justify-center mb-4"><Logo size="md" /></div>
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Call Ended</h2>
+          <p className="text-slate-500 text-sm">The support session has ended. Thank you!</p>
+          <p className="text-xs text-slate-400 mt-3">Duration: {timer.display}</p>
         </div>
       </div>
     )
@@ -143,35 +153,37 @@ export default function CustomerCall() {
   const mainAgent = agentParticipants[0]
 
   return (
-    <div className="h-screen flex flex-col bg-gray-950 overflow-hidden">
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800/50 bg-gray-900/80 backdrop-blur-sm shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 bg-white shrink-0">
         <div className="flex items-center gap-3">
           <Logo size="sm" />
-          <div className="w-px h-4 bg-gray-700" />
+          <div className="w-px h-4 bg-slate-200" />
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-sm text-gray-300">Support Call</span>
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-sm font-medium text-slate-700">Support Call</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-xs text-gray-400">
+        <div className="flex items-center gap-3">
           {recordingActive && (
-            <span className="flex items-center gap-1.5 text-red-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+            <span className="flex items-center gap-1.5 text-red-600 text-xs font-semibold bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               REC
             </span>
           )}
-          <span className="hidden sm:block">{customerName}</span>
-          <button onClick={() => setChatVisible(v => !v)} className="btn-secondary text-xs py-1 px-2">
+          <span className="text-xs text-slate-500 font-medium hidden sm:block">{customerName}</span>
+          <button onClick={() => setChatVisible(v => !v)}
+            className="text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 border border-primary-200 px-3 py-1.5 rounded-lg transition-colors">
             {chatVisible ? 'Hide Chat' : 'Chat'}
           </button>
         </div>
       </div>
 
-      {/* Main */}
+      {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 relative bg-gray-950 overflow-hidden">
-          {/* Main video — agent */}
+        {/* Left: main video (70%) */}
+        <div className="relative bg-slate-900 overflow-hidden"
+          style={chatVisible ? { flexBasis: '70%', flexGrow: 0, flexShrink: 0 } : { flex: 1 }}>
           <div className="absolute inset-0">
             {mainAgent ? (
               <VideoPlayer
@@ -183,19 +195,20 @@ export default function CustomerCall() {
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-700 flex items-center justify-center animate-pulse">
-                  <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center animate-pulse">
+                  <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <p className="text-gray-500 text-sm">Waiting for agent…</p>
+                <p className="text-slate-400 text-sm">Waiting for agent…</p>
               </div>
             )}
           </div>
 
-          {/* PiP — customer's own video */}
-          <div className="absolute bottom-20 left-4 w-44 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-10">
-            <VideoPlayer stream={localStream} muted label={customerName} className="w-full h-full" />
+          {/* WebRTC badge */}
+          <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+            WebRTC
           </div>
 
           {/* Floating controls */}
@@ -211,16 +224,31 @@ export default function CustomerCall() {
           </div>
         </div>
 
+        {/* Right: self video + chat (30%) */}
         {chatVisible && (
-          <div className="w-80 p-3 shrink-0 border-l border-gray-800">
-            <ChatPanel
-              messages={messages}
-              onSend={sendMessage}
-              currentUser={customerName}
-              socketRef={socketRef}
-              sessionId={sessionId}
-              typingPeer={typingPeer}
-            />
+          <div className="flex flex-col border-l border-slate-200 shrink-0 bg-white" style={{ flexBasis: '30%' }}>
+            {/* Self video top */}
+            <div className="h-44 bg-slate-900 border-b border-slate-700 shrink-0 relative overflow-hidden">
+              <VideoPlayer stream={localStream} muted label={customerName} className="w-full h-full" />
+            </div>
+            {/* Chat panel bottom */}
+            <div className="flex-1 overflow-hidden">
+              <ChatPanel
+                messages={messages}
+                onSend={sendMessage}
+                currentUser={customerName}
+                socketRef={socketRef}
+                sessionId={sessionId}
+                typingPeer={typingPeer}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* PiP when chat hidden */}
+        {!chatVisible && (
+          <div className="absolute bottom-20 right-4 w-44 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-10">
+            <VideoPlayer stream={localStream} muted label={customerName} className="w-full h-full" />
           </div>
         )}
       </div>

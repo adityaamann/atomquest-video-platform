@@ -7,20 +7,23 @@ const router = express.Router()
 
 router.post('/', requireAgent, async (req, res) => {
   try {
-    const existing = await prisma.session.findFirst({
-      where: { agentId: req.user.id, status: 'ACTIVE' },
-      include: { agent: { select: { id: true, email: true } } },
-      orderBy: { startedAt: 'desc' },
-    })
-    if (existing) return res.status(200).json(existing)
+    const { title, customerName, customerEmail, scheduledAt, expectedDuration, priority, description, category } = req.body || {}
 
     const session = await prisma.session.create({
       data: {
         agentId: req.user.id,
         inviteToken: uuidv4(),
         status: 'ACTIVE',
+        title: title?.trim() || 'Support Session',
+        customerName: customerName?.trim() || '',
+        customerEmail: customerEmail?.trim() || '',
+        scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        expectedDuration: expectedDuration ? parseInt(expectedDuration) : null,
+        priority: priority || 'MEDIUM',
+        description: description?.trim() || null,
+        category: category || 'General Inquiry',
       },
-      include: { agent: { select: { id: true, email: true } } },
+      include: { agent: { select: { id: true, email: true, name: true } } },
     })
     res.status(201).json(session)
   } catch (err) {
@@ -55,7 +58,7 @@ router.get('/:id', requireAgent, async (req, res) => {
         participants: true,
         messages: { orderBy: { sentAt: 'asc' } },
         recordings: true,
-        agent: { select: { id: true, email: true } },
+        agent: { select: { id: true, email: true, name: true } },
       },
     })
     if (!session) return res.status(404).json({ error: 'Session not found' })
