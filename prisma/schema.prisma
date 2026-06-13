@@ -112,4 +112,5 @@ enum RecordingStatus {
   IN_PROGRESS
   PROCESSING
   READY
+  FAILED
 }

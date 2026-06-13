@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import { useMediaStream } from '../hooks/useMediaStream'
@@ -65,7 +65,7 @@ export default function CustomerCall() {
       if (typing) typingTimerRef.current = setTimeout(() => setTypingPeer(null), 4000)
     })
 
-    socket.on('user-left', ({ socketId, name }) => {
+    socket.on('user-left', ({ socketId }) => {
       setParticipants(prev => prev.filter(p => p.socketId !== socketId))
       setPeerMediaStates(prev => { const n = { ...prev }; delete n[socketId]; return n })
       cleanupPeer(socketId)
@@ -74,7 +74,7 @@ export default function CustomerCall() {
     socket.on('receive-message', msg => setMessages(prev => [...prev, msg]))
     socket.on('recording-started', () => {
       setRecordingActive(true)
-      toast('Session recording started', { icon: '🔴' })
+      toast('Session is being recorded', { icon: '🔴' })
     })
     socket.on('recording-stopped', () => setRecordingActive(false))
 
@@ -85,10 +85,13 @@ export default function CustomerCall() {
       socket.disconnect()
     })
 
+    socket.on('error', ({ message }) => toast.error(message))
+
     const handleBeforeUnload = () => socket.disconnect()
     window.addEventListener('beforeunload', handleBeforeUnload)
 
     return () => {
+      clearTimeout(typingTimerRef.current)
       window.removeEventListener('beforeunload', handleBeforeUnload)
       socket.disconnect()
       stopAll()
@@ -96,19 +99,19 @@ export default function CustomerCall() {
     }
   }, [sessionId])
 
-  function handleToggleAudio() {
+  const handleToggleAudio = useCallback(() => {
     toggleAudio()
     const next = !localMediaRef.current.audioEnabled
     localMediaRef.current.audioEnabled = next
     socketRef.current?.emit('media-state-change', { sessionId, audioEnabled: next, videoEnabled: localMediaRef.current.videoEnabled })
-  }
+  }, [toggleAudio, sessionId])
 
-  function handleToggleVideo() {
+  const handleToggleVideo = useCallback(() => {
     toggleVideo()
     const next = !localMediaRef.current.videoEnabled
     localMediaRef.current.videoEnabled = next
     socketRef.current?.emit('media-state-change', { sessionId, audioEnabled: localMediaRef.current.audioEnabled, videoEnabled: next })
-  }
+  }, [toggleVideo, sessionId])
 
   function sendMessage(content, fileUrl, fileType) {
     socketRef.current?.emit('send-message', { sessionId, content, fileUrl, fileType })
@@ -123,9 +126,9 @@ export default function CustomerCall() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">Camera/Microphone Error</h2>
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">Media Error</h2>
           <p className="text-slate-600 text-sm">{mediaError}</p>
-          <p className="text-slate-400 text-xs mt-2">Allow camera/mic access and reload.</p>
+          <button onClick={() => window.location.reload()} className="btn-primary mt-4">Reload & Try Again</button>
         </div>
       </div>
     )
@@ -181,9 +184,8 @@ export default function CustomerCall() {
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: main video (70%) */}
-        <div className="relative bg-slate-900 overflow-hidden"
-          style={chatVisible ? { flexBasis: '70%', flexGrow: 0, flexShrink: 0 } : { flex: 1 }}>
+        {/* Left: main video */}
+        <div className="relative bg-slate-900 overflow-hidden flex-1">
           <div className="absolute inset-0">
             {mainAgent ? (
               <VideoPlayer
@@ -205,13 +207,17 @@ export default function CustomerCall() {
             )}
           </div>
 
-          {/* WebRTC badge */}
-          <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1.5">
+          <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1.5 pointer-events-none">
             <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />
             WebRTC
           </div>
 
-          {/* Floating controls */}
+          {!chatVisible && (
+            <div className="absolute bottom-20 right-4 w-44 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-10">
+              <VideoPlayer stream={localStream} muted label={customerName} className="w-full h-full" />
+            </div>
+          )}
+
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
             <CallControls
               audioEnabled={audioEnabled}
@@ -224,15 +230,13 @@ export default function CustomerCall() {
           </div>
         </div>
 
-        {/* Right: self video + chat (30%) */}
+        {/* Right: self video + chat */}
         {chatVisible && (
-          <div className="flex flex-col border-l border-slate-200 shrink-0 bg-white" style={{ flexBasis: '30%' }}>
-            {/* Self video top */}
-            <div className="h-44 bg-slate-900 border-b border-slate-700 shrink-0 relative overflow-hidden">
+          <div className="w-80 flex flex-col border-l border-slate-200 shrink-0 bg-white">
+            <div className="h-44 bg-slate-900 border-b border-slate-700 shrink-0 overflow-hidden">
               <VideoPlayer stream={localStream} muted label={customerName} className="w-full h-full" />
             </div>
-            {/* Chat panel bottom */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden min-h-0">
               <ChatPanel
                 messages={messages}
                 onSend={sendMessage}
@@ -242,13 +246,6 @@ export default function CustomerCall() {
                 typingPeer={typingPeer}
               />
             </div>
-          </div>
-        )}
-
-        {/* PiP when chat hidden */}
-        {!chatVisible && (
-          <div className="absolute bottom-20 right-4 w-44 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-10">
-            <VideoPlayer stream={localStream} muted label={customerName} className="w-full h-full" />
           </div>
         )}
       </div>

@@ -56,7 +56,7 @@ function analyzeMessages(messages, agentEmail) {
       customerMessages++
     }
 
-    const words = msg.content.toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/)
+    const words = (msg.content || '').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/)
     for (const w of words) {
       if (!w || w.length < 3) continue
       if (POSITIVE_WORDS.has(w)) positiveSignals++

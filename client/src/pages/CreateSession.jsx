@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import api from '../lib/api'
 import Navbar from '../components/Navbar'
-import Logo from '../components/Logo'
 import toast from 'react-hot-toast'
 
 const CATEGORIES = ['Technical Support', 'Billing', 'Product Demo', 'General Inquiry', 'Bug Report']

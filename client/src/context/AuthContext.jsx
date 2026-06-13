@@ -2,15 +2,33 @@ import { createContext, useContext, useState, useCallback } from 'react'
 
 const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem('user')
-      return stored ? JSON.parse(stored) : null
-    } catch {
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
+function loadFromStorage() {
+  try {
+    const token = localStorage.getItem('token')
+    const stored = localStorage.getItem('user')
+    if (!token || !stored) return null
+    if (isTokenExpired(token)) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       return null
     }
-  })
+    return JSON.parse(stored)
+  } catch {
+    return null
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(loadFromStorage)
 
   const login = useCallback((token, userData) => {
     localStorage.setItem('token', token)

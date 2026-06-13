@@ -74,6 +74,12 @@ router.post('/:id/recording/:recordingId/upload', requireAgent, uploadRec.single
 
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
 
+    // Verify the recording exists and belongs to this session
+    const recording = await prisma.recording.findFirst({
+      where: { id: req.params.recordingId, sessionId: session.id },
+    })
+    if (!recording) return res.status(404).json({ error: 'Recording not found' })
+
     await prisma.recording.update({
       where: { id: req.params.recordingId },
       data: { status: 'READY', filePath: req.file.path },
@@ -82,6 +88,13 @@ router.post('/:id/recording/:recordingId/upload', requireAgent, uploadRec.single
     res.json({ status: 'READY', filePath: req.file.path })
   } catch (err) {
     console.error('Upload recording error:', err)
+    // If upload fails, mark recording as failed so it's not stuck at PROCESSING
+    try {
+      await prisma.recording.update({
+        where: { id: req.params.recordingId },
+        data: { status: 'FAILED' },
+      }).catch(() => {})
+    } catch {}
     res.status(500).json({ error: 'Failed to save recording' })
   }
 })

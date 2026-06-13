@@ -272,8 +272,11 @@ export default function SessionHistory() {
                   <div key={r.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <div>
                       <span className={`text-sm font-semibold ${
-                        r.status === 'READY' ? 'text-green-600' : r.status === 'PROCESSING' ? 'text-yellow-600' : 'text-slate-500'
-                      }`}>{r.status}</span>
+                        r.status === 'READY' ? 'text-green-600'
+                        : r.status === 'PROCESSING' ? 'text-yellow-600'
+                        : r.status === 'FAILED' ? 'text-red-500'
+                        : 'text-slate-500'
+                      }`}>{r.status === 'FAILED' ? 'Upload Failed' : r.status}</span>
                       <p className="text-xs text-slate-400 mt-0.5">{new Date(r.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
                     </div>
                     {r.status === 'READY' && (

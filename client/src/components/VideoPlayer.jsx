@@ -4,8 +4,16 @@ export default function VideoPlayer({ stream, muted = false, label, className = 
   const videoRef = useRef(null)
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream
+    const video = videoRef.current
+    if (!video) return
+    if (stream) {
+      video.srcObject = stream
+    } else {
+      video.srcObject = null
+    }
+    return () => {
+      // Clear srcObject on unmount to release media tracks from the element
+      if (video) video.srcObject = null
     }
   }, [stream])
 

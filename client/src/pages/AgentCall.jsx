@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import { useAuth } from '../context/AuthContext'
@@ -16,7 +16,7 @@ function useNetworkQuality(socketRef) {
   const [quality, setQuality] = useState(null)
   useEffect(() => {
     const check = () => {
-      if (!socketRef.current) return
+      if (!socketRef.current?.connected) return
       const start = Date.now()
       socketRef.current.emit('ping-check')
       socketRef.current.once('pong-check', () => {
@@ -30,7 +30,7 @@ function useNetworkQuality(socketRef) {
     }
     const id = setInterval(check, 5000)
     return () => clearInterval(id)
-  }, [])
+  }, [socketRef])
   return quality
 }
 
@@ -50,6 +50,7 @@ export default function AgentCall() {
   const [peerMediaStates, setPeerMediaStates] = useState({})
   const [typingPeer, setTypingPeer] = useState(null)
   const [chatVisible, setChatVisible] = useState(true)
+  const [recordingBusy, setRecordingBusy] = useState(false)
 
   const socketRef = useRef(null)
   const pendingPeersRef = useRef([])
@@ -125,6 +126,7 @@ export default function AgentCall() {
     window.addEventListener('beforeunload', handleBeforeUnload)
 
     return () => {
+      clearTimeout(typingTimerRef.current)
       window.removeEventListener('beforeunload', handleBeforeUnload)
       socket.disconnect()
       stopAll()
@@ -139,22 +141,24 @@ export default function AgentCall() {
     pending.forEach(socketId => createPeer(socketId, true))
   }, [localStream])
 
-  function handleToggleAudio() {
+  const handleToggleAudio = useCallback(() => {
     toggleAudio()
     const next = !localMediaRef.current.audioEnabled
     localMediaRef.current.audioEnabled = next
     socketRef.current?.emit('media-state-change', { sessionId, audioEnabled: next, videoEnabled: localMediaRef.current.videoEnabled })
-  }
+  }, [toggleAudio, sessionId])
 
-  function handleToggleVideo() {
+  const handleToggleVideo = useCallback(() => {
     toggleVideo()
     const next = !localMediaRef.current.videoEnabled
     localMediaRef.current.videoEnabled = next
     socketRef.current?.emit('media-state-change', { sessionId, audioEnabled: localMediaRef.current.audioEnabled, videoEnabled: next })
-  }
+  }, [toggleVideo, sessionId])
 
   async function startRecording() {
+    if (recordingBusy || recordingStatus === 'IN_PROGRESS') return
     if (!localStream) return toast.error('No local stream available')
+    setRecordingBusy(true)
     try {
       const { data } = await api.post(`/api/sessions/${sessionId}/recording/start`)
       setActiveRecordingId(data.recordingId)
@@ -169,10 +173,14 @@ export default function AgentCall() {
       mediaRecorderRef.current = mr
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to start recording')
+    } finally {
+      setRecordingBusy(false)
     }
   }
 
   async function stopRecording() {
+    if (recordingBusy || recordingStatus !== 'IN_PROGRESS') return
+    setRecordingBusy(true)
     const recId = activeRecordingId
     try {
       await new Promise(resolve => {
@@ -189,12 +197,20 @@ export default function AgentCall() {
       setRecordingStatus('PROCESSING')
       const formData = new FormData()
       formData.append('recording', blob, `${recId}.webm`)
-      toast.promise(
-        api.post(`/api/sessions/${sessionId}/recording/${recId}/upload`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-        { loading: 'Saving recording...', success: 'Recording saved!', error: 'Recording save failed' }
-      )
+      try {
+        await api.post(`/api/sessions/${sessionId}/recording/${recId}/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        setRecordingStatus('READY')
+        toast.success('Recording saved!')
+      } catch {
+        toast.error('Recording save failed — the call was recorded but could not be uploaded.')
+        setRecordingStatus(null)
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to stop recording')
+    } finally {
+      setRecordingBusy(false)
     }
   }
 
@@ -220,9 +236,9 @@ export default function AgentCall() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">Camera/Microphone Error</h2>
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">Media Error</h2>
           <p className="text-slate-600 text-sm">{mediaError}</p>
-          <p className="text-slate-400 text-xs mt-2">Allow camera/mic access and reload.</p>
+          <button onClick={() => window.location.reload()} className="btn-primary mt-4">Reload & Try Again</button>
         </div>
       </div>
     )
@@ -238,7 +254,7 @@ export default function AgentCall() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">Session Ended</h2>
-          <p className="text-slate-500">Redirecting to dashboard...</p>
+          <p className="text-slate-500">Redirecting to dashboard…</p>
         </div>
       </div>
     )
@@ -277,9 +293,8 @@ export default function AgentCall() {
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: main video (70%) */}
-        <div className={`relative bg-slate-900 overflow-hidden ${chatVisible ? 'flex-1' : 'flex-1'}`}
-          style={chatVisible ? { flexBasis: '70%', flexGrow: 0, flexShrink: 0 } : {}}>
+        {/* Left: main video */}
+        <div className="relative bg-slate-900 overflow-hidden flex-1">
           <div className="absolute inset-0">
             {mainParticipant ? (
               <VideoPlayer
@@ -303,10 +318,17 @@ export default function AgentCall() {
           </div>
 
           {/* WebRTC badge */}
-          <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1.5">
+          <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1.5 pointer-events-none">
             <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />
             WebRTC
           </div>
+
+          {/* PiP (own video) — shown here when chat is hidden */}
+          {!chatVisible && (
+            <div className="absolute bottom-20 right-4 w-44 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-10">
+              <VideoPlayer stream={localStream} muted label="You" className="w-full h-full" />
+            </div>
+          )}
 
           {/* Floating controls */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
@@ -318,6 +340,7 @@ export default function AgentCall() {
               onEndCall={endSession}
               isAgent={true}
               recordingStatus={recordingStatus}
+              recordingBusy={recordingBusy}
               onStartRecording={startRecording}
               onStopRecording={stopRecording}
               networkQuality={networkQuality}
@@ -326,15 +349,13 @@ export default function AgentCall() {
           </div>
         </div>
 
-        {/* Right: self video + chat (30%) */}
+        {/* Right: self video (top) + chat (bottom) */}
         {chatVisible && (
-          <div className="w-80 flex flex-col border-l border-slate-200 shrink-0 bg-white" style={{ flexBasis: '30%' }}>
-            {/* Self video top */}
-            <div className="h-44 bg-slate-900 border-b border-slate-700 shrink-0 relative overflow-hidden">
+          <div className="w-80 flex flex-col border-l border-slate-200 shrink-0 bg-white">
+            <div className="h-44 bg-slate-900 border-b border-slate-700 shrink-0 overflow-hidden">
               <VideoPlayer stream={localStream} muted label="You (Agent)" className="w-full h-full" />
             </div>
-            {/* Chat panel bottom */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden min-h-0">
               <ChatPanel
                 messages={messages}
                 onSend={sendMessage}
@@ -344,13 +365,6 @@ export default function AgentCall() {
                 typingPeer={typingPeer}
               />
             </div>
-          </div>
-        )}
-
-        {/* When chat hidden, PiP in video area */}
-        {!chatVisible && (
-          <div className="absolute bottom-20 right-4 w-44 h-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-10">
-            <VideoPlayer stream={localStream} muted label="You" className="w-full h-full" />
           </div>
         )}
       </div>

@@ -28,7 +28,13 @@ export default function Navbar() {
     navigate('/login')
   }
 
-  const isActive = (to) => location.pathname === to || location.pathname.startsWith(to + '/')
+  const isActive = (to) => {
+    if (to === '/sessions') {
+      // /sessions redirects to /dashboard; don't highlight it unless literally on /sessions
+      return location.pathname === '/sessions'
+    }
+    return location.pathname === to || location.pathname.startsWith(to + '/')
+  }
 
   return (
     <nav className="sticky top-0 z-40 bg-white border-b border-slate-200" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>

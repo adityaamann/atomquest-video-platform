@@ -19,16 +19,16 @@ export default class ErrorBoundary extends Component {
     if (!this.state.hasError) return this.props.children
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center space-y-6">
-          <Logo size="lg" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="card max-w-md w-full text-center space-y-6">
+          <div className="flex justify-center"><Logo size="md" /></div>
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
-            <p className="text-gray-400 text-sm">
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Something went wrong</h1>
+            <p className="text-slate-500 text-sm">
               An unexpected error occurred. Please refresh the page.
             </p>
             {this.state.error?.message && (
-              <p className="mt-3 text-xs text-gray-600 font-mono bg-gray-900 rounded-lg px-4 py-3 text-left">
+              <p className="mt-3 text-xs text-slate-600 font-mono bg-slate-100 border border-slate-200 rounded-lg px-4 py-3 text-left">
                 {this.state.error.message}
               </p>
             )}

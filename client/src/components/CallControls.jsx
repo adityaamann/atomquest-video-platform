@@ -1,9 +1,10 @@
-function ControlBtn({ onClick, title, active, danger, recording, children, className = '' }) {
+function ControlBtn({ onClick, title, active, danger, recording, disabled, children }) {
   return (
     <button
       onClick={onClick}
       title={title}
-      className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm ${
+      disabled={disabled}
+      className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
         danger
           ? 'bg-red-600 hover:bg-red-500 text-white w-12 h-12 shadow-md'
           : active === false
@@ -11,7 +12,7 @@ function ControlBtn({ onClick, title, active, danger, recording, children, class
           : recording
           ? 'bg-red-600 hover:bg-red-500 text-white ring-2 ring-red-400 ring-offset-2'
           : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
-      } ${className}`}
+      }`}
     >
       {children}
     </button>
@@ -26,6 +27,7 @@ export default function CallControls({
   onEndCall,
   isAgent = false,
   recordingStatus,
+  recordingBusy = false,
   onStartRecording,
   onStopRecording,
   networkQuality,
@@ -75,11 +77,19 @@ export default function CallControls({
         {isAgent && (
           <ControlBtn
             onClick={isRecording ? onStopRecording : onStartRecording}
-            title={isRecording ? 'Stop Recording' : 'Start Recording'}
+            title={recordingBusy ? 'Processing…' : isRecording ? 'Stop Recording' : 'Start Recording'}
             active={true}
             recording={isRecording}
+            disabled={recordingBusy}
           >
-            <div className={`w-4 h-4 rounded-full ${isRecording ? 'bg-white animate-pulse' : 'bg-red-500'}`} />
+            {recordingBusy ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <div className={`w-4 h-4 rounded-full ${isRecording ? 'bg-white animate-pulse' : 'bg-red-500'}`} />
+            )}
           </ControlBtn>
         )}
 
@@ -100,11 +110,11 @@ export default function CallControls({
             <div className="w-px h-8 bg-slate-200 mx-1" />
             <div className="flex items-end gap-0.5" title={`${networkQuality.label}: ${networkQuality.ping}ms`}>
               {[1,2,3].map(i => (
-                <div key={i} className={`w-1.5 rounded-sm transition-colors ${i <= networkQuality.bars
-                  ? (networkQuality.bars === 3 ? 'bg-green-500' : networkQuality.bars === 2 ? 'bg-yellow-500' : 'bg-red-500')
-                  : 'bg-slate-200'}`}
-                  style={{ height: `${6 + i * 5}px` }}
-                />
+                <div key={i} className={`w-1.5 rounded-sm transition-colors ${
+                  i <= networkQuality.bars
+                    ? networkQuality.bars === 3 ? 'bg-green-500' : networkQuality.bars === 2 ? 'bg-yellow-500' : 'bg-red-500'
+                    : 'bg-slate-200'
+                }`} style={{ height: `${6 + i * 5}px` }} />
               ))}
             </div>
           </>

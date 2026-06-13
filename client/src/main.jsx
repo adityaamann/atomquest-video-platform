@@ -10,8 +10,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Toaster
       position="top-right"
       toastOptions={{
-        style: { background: '#1f2937', color: '#f9fafb', border: '1px solid #374151' },
-        success: { iconTheme: { primary: '#FF6B00', secondary: '#fff' } },
+        style: {
+          background: '#ffffff',
+          color: '#0f172a',
+          border: '1px solid #e2e8f0',
+          borderRadius: '10px',
+          fontSize: '14px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        },
+        success: { iconTheme: { primary: '#2563eb', secondary: '#fff' } },
+        error: { iconTheme: { primary: '#dc2626', secondary: '#fff' } },
       }}
     />
   </React.StrictMode>
