@@ -138,7 +138,7 @@ export default function Signup() {
 
             <Field label="Company Name" error={errors.company}>
               <input type="text" value={form.company} onChange={e => set('company', e.target.value)}
-                placeholder="Atomberg Technologies" autoComplete="organization"
+                placeholder="Acme Inc." autoComplete="organization"
                 className={`input-field ${errors.company ? 'input-error' : ''}`} />
             </Field>
 

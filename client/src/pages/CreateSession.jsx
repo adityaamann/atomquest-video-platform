@@ -5,7 +5,6 @@ import api from '../lib/api'
 import Navbar from '../components/Navbar'
 import toast from 'react-hot-toast'
 
-const CATEGORIES = ['Technical Support', 'Billing', 'Product Demo', 'General Inquiry', 'Bug Report']
 const DURATIONS = [
   { label: '15 minutes', value: 15 }, { label: '30 minutes', value: 30 },
   { label: '45 minutes', value: 45 }, { label: '1 hour', value: 60 },
@@ -59,7 +58,6 @@ function SuccessScreen({ session, inviteUrl, onStartCall, onBack }) {
           <h2 className="font-semibold text-slate-900 mb-1">{session.title}</h2>
           <div className="flex flex-wrap gap-3 text-sm text-slate-500">
             {session.customerName && <span>Customer: <span className="text-slate-700 font-medium">{session.customerName}</span></span>}
-            {session.category && <span className="bg-slate-100 px-2 py-0.5 rounded-full text-xs">{session.category}</span>}
           </div>
         </div>
 
@@ -119,7 +117,7 @@ export default function CreateSession() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
     title: '', customerName: '', customerEmail: '', date: '', time: '',
-    expectedDuration: 30, priority: 'MEDIUM', description: '', category: 'Technical Support',
+    expectedDuration: 30, priority: 'MEDIUM', description: '',
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -159,7 +157,6 @@ export default function CreateSession() {
         expectedDuration: form.expectedDuration,
         priority: form.priority,
         description: form.description.trim() || null,
-        category: form.category,
       })
       setCreated(data)
     } catch (err) {
@@ -170,7 +167,7 @@ export default function CreateSession() {
   }
 
   if (created) {
-    const inviteUrl = `${window.location.origin}/join/${created.inviteToken}`
+    const inviteUrl = `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/join/${created.inviteToken}`
     return (
       <SuccessScreen
         session={created}
@@ -231,20 +228,12 @@ export default function CreateSession() {
           <div className="card space-y-5">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Session Options</p>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Expected Duration">
-                <select value={form.expectedDuration} onChange={e => set('expectedDuration', parseInt(e.target.value))}
-                  className="input-field">
-                  {DURATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-                </select>
-              </Field>
-              <Field label="Category">
-                <select value={form.category} onChange={e => set('category', e.target.value)}
-                  className="input-field">
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </Field>
-            </div>
+            <Field label="Expected Duration">
+              <select value={form.expectedDuration} onChange={e => set('expectedDuration', parseInt(e.target.value))}
+                className="input-field">
+                {DURATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+              </select>
+            </Field>
 
             <Field label="Priority">
               <div className="flex gap-2 flex-wrap">

@@ -223,10 +223,6 @@ export default function SessionHistory() {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Duration</p>
               <p className="text-sm font-mono text-slate-700">{formatDuration(session.duration)}</p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Category</p>
-              <p className="text-sm text-slate-700">{session.category || '—'}</p>
-            </div>
           </div>
         </div>
 

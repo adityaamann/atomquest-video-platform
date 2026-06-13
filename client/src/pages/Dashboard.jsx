@@ -42,7 +42,7 @@ function StatCard({ icon, label, value, color = 'text-primary-600', bg = 'bg-pri
 
 function SessionCard({ session, onCopyInvite }) {
   const navigate = useNavigate()
-  const inviteUrl = `${window.location.origin}/join/${session.inviteToken}`
+  const inviteUrl = `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/join/${session.inviteToken}`
   const isActive = session.status === 'ACTIVE'
 
   return (
@@ -67,7 +67,6 @@ function SessionCard({ session, onCopyInvite }) {
         <span>{formatDate(session.startedAt)}</span>
         {session.duration ? <span className="font-medium">{formatDur(session.duration)}</span> : null}
         {session._count?.messages > 0 ? <span>{session._count.messages} msgs</span> : null}
-        {session.category ? <span className="bg-slate-100 px-2 py-0.5 rounded-full text-slate-500">{session.category}</span> : null}
       </div>
 
       <div className="flex gap-2 flex-wrap">

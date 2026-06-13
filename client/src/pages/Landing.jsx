@@ -51,10 +51,6 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-24 text-center page-enter">
-        <span className="inline-flex items-center gap-2 bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 border border-primary-100">
-          <span className="w-1.5 h-1.5 bg-primary-600 rounded-full animate-pulse" />
-          AtomQuest Hackathon 2026 — Grand Finale
-        </span>
         <h1 className="text-5xl sm:text-6xl font-bold text-slate-900 leading-tight mb-6">
           Enterprise Video Support,<br />
           <span className="text-primary-600">Built for Your Team</span>
@@ -149,7 +145,7 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="px-6 py-8 text-center text-slate-400 text-sm">
-        Built for <span className="font-medium text-slate-600">AtomQuest Hackathon 1.0</span> by Atomberg Technologies
+        © {new Date().getFullYear()} SupportVision. All rights reserved.
       </footer>
     </div>
   )

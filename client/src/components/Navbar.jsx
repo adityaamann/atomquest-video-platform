@@ -19,7 +19,7 @@ export default function Navbar() {
 
   const links = [
     { to: '/dashboard', label: 'Dashboard' },
-    { to: '/sessions', label: 'Sessions' },
+    { to: '/sessions/new', label: 'New Session' },
     ...(user?.role === 'AGENT' ? [{ to: '/admin', label: 'Admin' }] : []),
   ]
 
@@ -29,10 +29,7 @@ export default function Navbar() {
   }
 
   const isActive = (to) => {
-    if (to === '/sessions') {
-      // /sessions redirects to /dashboard; don't highlight it unless literally on /sessions
-      return location.pathname === '/sessions'
-    }
+    if (to === '/dashboard') return location.pathname === '/dashboard'
     return location.pathname === to || location.pathname.startsWith(to + '/')
   }
 
