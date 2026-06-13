@@ -71,6 +71,7 @@ module.exports = function createAdminRouter(io) {
     try {
       const session = await prisma.session.findUnique({ where: { id: req.params.id } })
       if (!session) return res.status(404).json({ error: 'Session not found' })
+      if (session.agentId !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
       if (session.status === 'ENDED') return res.status(400).json({ error: 'Already ended' })
 
       const endedAt = new Date()

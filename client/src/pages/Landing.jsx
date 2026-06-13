@@ -147,7 +147,7 @@ export default function Landing() {
       <section className="bg-slate-50 border-y border-slate-200 px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-4">Everything you need</h2>
-          <p className="text-slate-500 text-center mb-12">One platform for video support, chat, recording, and analytics.</p>
+          <p className="text-slate-500 text-center mb-12">One platform for video support, chat, and session recording.</p>
           <div className="grid md:grid-cols-3 gap-6">
             {features.map(f => (
               <div key={f.title} className="card-hover p-8">

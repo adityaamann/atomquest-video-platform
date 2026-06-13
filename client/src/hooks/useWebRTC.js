@@ -83,7 +83,7 @@ export function useWebRTC({ localStream, socketRef }) {
       if (signal.type === 'offer') {
         if (!pc) pc = createPeer(fromSocketId, false)
         try {
-          await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+          await pc.setRemoteDescription(signal.sdp)
           const answer = await pc.createAnswer()
           await pc.setLocalDescription(answer)
           socketRef.current?.emit('signal', {
@@ -95,14 +95,14 @@ export function useWebRTC({ localStream, socketRef }) {
         }
       } else if (signal.type === 'answer') {
         try {
-          await pc?.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+          await pc?.setRemoteDescription(signal.sdp)
         } catch (err) {
           console.error('Error handling answer:', err)
         }
       } else if (signal.type === 'ice-candidate') {
         try {
           if (pc && signal.candidate) {
-            await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
+            await pc.addIceCandidate(signal.candidate)
           }
         } catch (err) {
           console.error('Error adding ICE candidate:', err)
