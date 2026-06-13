@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import api from '../lib/api'
 import toast from 'react-hot-toast'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://atomquest-video-platform-o9yz.onrender.com'
 const MAX_FILE_BYTES = 10 * 1024 * 1024
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])

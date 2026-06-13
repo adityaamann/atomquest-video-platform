@@ -8,7 +8,7 @@ export function useSocket() {
 
   useEffect(() => {
     if (!socketInstance) {
-      socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001', {
+      socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'https://atomquest-video-platform-o9yz.onrender.com', {
         withCredentials: true,
         transports: ['websocket', 'polling'],
       })

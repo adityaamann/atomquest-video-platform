@@ -64,7 +64,7 @@ export default function AgentCall() {
   const networkQuality = useNetworkQuality(socketRef)
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001', { withCredentials: true })
+    const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://atomquest-video-platform-o9yz.onrender.com', { withCredentials: true })
     socketRef.current = socket
 
     socket.emit('join-session', { sessionId, name: user.email, role: 'AGENT', userId: user.id })

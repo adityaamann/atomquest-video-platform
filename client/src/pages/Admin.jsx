@@ -95,7 +95,7 @@ export default function Admin() {
   useEffect(() => {
     fetchSessions()
     fetchMetrics()
-    const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001', { withCredentials: true })
+    const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://atomquest-video-platform-o9yz.onrender.com', { withCredentials: true })
     socketRef.current = socket
     socket.emit('join-admin')
     socket.on('admin-update', () => fetchSessions())

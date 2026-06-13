@@ -41,7 +41,7 @@ export default function CustomerCall() {
   const timer = useSessionTimer()
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001', { withCredentials: true })
+    const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://atomquest-video-platform-o9yz.onrender.com', { withCredentials: true })
     socketRef.current = socket
 
     socket.emit('join-session', { sessionId, name: customerName, role: 'CUSTOMER', userId: null })
