@@ -39,7 +39,7 @@ const registerSocketHandlers = require('./socket/handlers')
 const app = express()
 const server = http.createServer(app)
 
-const rawOrigin = process.env.CLIENT_URL || 'http://localhost:5173'
+const rawOrigin = process.env.CLIENT_URL || 'http://localhost:5173,https://atomquest-video-platform.vercel.app'
 const allowedOrigins = rawOrigin === '*' ? true : rawOrigin.split(',').map((s) => s.trim())
 
 const io = new Server(server, {
