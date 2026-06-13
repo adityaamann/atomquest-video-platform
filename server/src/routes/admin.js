@@ -9,7 +9,7 @@ module.exports = function createAdminRouter(io) {
     try {
       const [active, ended] = await Promise.all([
         prisma.session.findMany({
-          where: { status: 'ACTIVE' },
+          where: { status: 'ACTIVE', agentId: req.user.id },
           include: {
             agent: { select: { id: true, email: true } },
             participants: true,
@@ -18,7 +18,7 @@ module.exports = function createAdminRouter(io) {
           orderBy: { startedAt: 'desc' },
         }),
         prisma.session.findMany({
-          where: { status: 'ENDED' },
+          where: { status: 'ENDED', agentId: req.user.id },
           include: {
             agent: { select: { id: true, email: true } },
             participants: true,
@@ -38,6 +38,7 @@ module.exports = function createAdminRouter(io) {
   router.get('/sessions/export', requireAgent, async (req, res) => {
     try {
       const sessions = await prisma.session.findMany({
+        where: { agentId: req.user.id },
         include: { agent: { select: { email: true } }, participants: true, _count: { select: { messages: true } } },
         orderBy: { startedAt: 'desc' },
       })
