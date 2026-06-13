@@ -154,7 +154,7 @@ export default function JoinCall() {
                 <div>
                   <label className="form-label">Your Name</label>
                   <input type="text" value={name} onChange={e => setName(e.target.value)}
-                    required placeholder="Enter your full name" autoFocus
+                    required placeholder="First name" autoFocus
                     className="input-field" />
                 </div>
 

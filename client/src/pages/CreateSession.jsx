@@ -55,10 +55,7 @@ function SuccessScreen({ session, inviteUrl, onStartCall, onBack }) {
         </div>
 
         <div className="card mb-4">
-          <h2 className="font-semibold text-slate-900 mb-1">{session.title}</h2>
-          <div className="flex flex-wrap gap-3 text-sm text-slate-500">
-            {session.customerName && <span>Customer: <span className="text-slate-700 font-medium">{session.customerName}</span></span>}
-          </div>
+          <h2 className="font-semibold text-slate-900">{session.title}</h2>
         </div>
 
         <div className="card mb-4">
@@ -116,7 +113,7 @@ function SuccessScreen({ session, inviteUrl, onStartCall, onBack }) {
 export default function CreateSession() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    title: '', customerName: '', customerEmail: '', date: '', time: '',
+    title: '', date: '', time: '',
     expectedDuration: 30, priority: 'MEDIUM', description: '',
   })
   const [errors, setErrors] = useState({})
@@ -131,9 +128,6 @@ export default function CreateSession() {
   function validate() {
     const e = {}
     if (!form.title.trim()) e.title = 'Meeting title is required'
-    if (!form.customerName.trim()) e.customerName = 'Customer name is required'
-    if (!form.customerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail))
-      e.customerEmail = 'Valid customer email is required'
     if (!form.date) e.date = 'Date is required'
     if (!form.time) e.time = 'Time is required'
     return e
@@ -151,8 +145,6 @@ export default function CreateSession() {
       }
       const { data } = await api.post('/api/sessions', {
         title: form.title.trim(),
-        customerName: form.customerName.trim(),
-        customerEmail: form.customerEmail.trim(),
         scheduledAt,
         expectedDuration: form.expectedDuration,
         priority: form.priority,
@@ -195,22 +187,9 @@ export default function CreateSession() {
 
             <Field label="Meeting Title" error={errors.title} required>
               <input type="text" value={form.title} onChange={e => set('title', e.target.value)}
-                placeholder="e.g. Technical Support Call" autoFocus
+                placeholder="Meeting title" autoFocus
                 className={`input-field ${errors.title ? 'input-error' : ''}`} />
             </Field>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Customer Name" error={errors.customerName} required>
-                <input type="text" value={form.customerName} onChange={e => set('customerName', e.target.value)}
-                  placeholder="John Smith"
-                  className={`input-field ${errors.customerName ? 'input-error' : ''}`} />
-              </Field>
-              <Field label="Customer Email" error={errors.customerEmail} required>
-                <input type="email" value={form.customerEmail} onChange={e => set('customerEmail', e.target.value)}
-                  placeholder="john@example.com"
-                  className={`input-field ${errors.customerEmail ? 'input-error' : ''}`} />
-              </Field>
-            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <Field label="Date (IST)" error={errors.date} required>

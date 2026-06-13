@@ -88,20 +88,20 @@ export default function Signup() {
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <Field label="Full Name" error={errors.name}>
               <input type="text" value={form.name} onChange={e => set('name', e.target.value)}
-                placeholder="John Smith" autoComplete="name" autoFocus
+                placeholder="First name" autoComplete="name" autoFocus
                 className={`input-field ${errors.name ? 'input-error' : ''}`} />
             </Field>
 
             <Field label="Work Email" error={errors.email}>
               <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
-                placeholder="john@company.com" autoComplete="email"
+                placeholder="Work email" autoComplete="email"
                 className={`input-field ${errors.email ? 'input-error' : ''}`} />
             </Field>
 
             <Field label="Password" error={errors.password}>
               <div className="relative">
                 <input type={showPw ? 'text' : 'password'} value={form.password} onChange={e => set('password', e.target.value)}
-                  placeholder="Min 8 chars, 1 uppercase, 1 number" autoComplete="new-password"
+                  placeholder="Password" autoComplete="new-password"
                   className={`input-field pr-10 ${errors.password ? 'input-error' : ''}`} />
                 <button type="button" onClick={() => setShowPw(s => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -132,13 +132,13 @@ export default function Signup() {
 
             <Field label="Confirm Password" error={errors.confirm}>
               <input type={showPw ? 'text' : 'password'} value={form.confirm} onChange={e => set('confirm', e.target.value)}
-                placeholder="Re-enter password" autoComplete="new-password"
+                placeholder="Confirm password" autoComplete="new-password"
                 className={`input-field ${errors.confirm ? 'input-error' : ''}`} />
             </Field>
 
             <Field label="Company Name" error={errors.company}>
               <input type="text" value={form.company} onChange={e => set('company', e.target.value)}
-                placeholder="Acme Inc." autoComplete="organization"
+                placeholder="Company name" autoComplete="organization"
                 className={`input-field ${errors.company ? 'input-error' : ''}`} />
             </Field>
 
