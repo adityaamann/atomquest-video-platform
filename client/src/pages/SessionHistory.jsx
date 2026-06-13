@@ -11,112 +11,6 @@ function formatDuration(seconds) {
   return `${m}m ${s}s`
 }
 
-const SENTIMENT_STYLE = {
-  positive: 'bg-green-50 border-green-200 text-green-700',
-  neutral: 'bg-blue-50 border-blue-200 text-blue-700',
-  negative: 'bg-red-50 border-red-200 text-red-700',
-}
-
-const SENTIMENT_ICON = { positive: '😊', neutral: '😐', negative: '😟' }
-
-function InsightStat({ label, value }) {
-  return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-center">
-      <p className="text-xl font-bold text-slate-900">{value}</p>
-      <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-    </div>
-  )
-}
-
-function SessionInsightsCard({ sessionId }) {
-  const [insights, setInsights] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    api.get(`/api/sessions/${sessionId}/insights`)
-      .then(({ data }) => setInsights(data))
-      .catch(err => setError(err.response?.data?.error || 'Failed to load insights'))
-      .finally(() => setLoading(false))
-  }, [sessionId])
-
-  if (loading) {
-    return (
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
-          <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <h2 className="font-semibold text-slate-900">Session Insights</h2>
-        </div>
-        <div className="skeleton h-24 rounded-xl" />
-      </div>
-    )
-  }
-
-  if (error || !insights) {
-    return (
-      <div className="card">
-        <div className="flex items-center gap-2 mb-3">
-          <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <h2 className="font-semibold text-slate-900">Session Insights</h2>
-        </div>
-        <p className="text-slate-500 text-sm">{error || 'No insights available for this session'}</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <h2 className="font-semibold text-slate-900">Session Insights</h2>
-        </div>
-        <span className={`text-xs font-semibold px-3 py-1 rounded-full border capitalize ${SENTIMENT_STYLE[insights.sentiment] || SENTIMENT_STYLE.neutral}`}>
-          {SENTIMENT_ICON[insights.sentiment]} {insights.sentiment}
-        </span>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-        <InsightStat label="Total Messages" value={insights.totalMessages} />
-        <InsightStat label="Agent Messages" value={insights.agentMessages} />
-        <InsightStat label="Customer Messages" value={insights.customerMessages} />
-        <InsightStat label="Duration" value={insights.duration} />
-      </div>
-
-      <div className="flex items-center gap-5 mb-5 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-slate-600">{insights.positiveSignals} positive signals</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-red-400" />
-          <span className="text-slate-600">{insights.negativeSignals} negative signals</span>
-        </div>
-      </div>
-
-      {insights.keywords?.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Top Keywords</p>
-          <div className="flex flex-wrap gap-2">
-            {insights.keywords.map(({ word, count }) => (
-              <span key={word} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-full px-3 py-1 text-xs text-slate-700">
-                {word}
-                <span className="text-slate-400 ml-0.5">×{count}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function SessionHistory() {
   const { id } = useParams()
   const [session, setSession] = useState(null)
@@ -286,9 +180,6 @@ export default function SessionHistory() {
             )}
           </div>
         </div>
-
-        {/* Insights */}
-        <SessionInsightsCard sessionId={id} />
 
         {/* Chat transcript */}
         <div className="card">

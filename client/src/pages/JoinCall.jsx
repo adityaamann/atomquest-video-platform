@@ -177,9 +177,6 @@ export default function JoinCall() {
               </form>
             </div>
 
-            <p className="text-xs text-slate-400 mt-6 text-center">
-              Powered by WebRTC · SupportVision
-            </p>
           </div>
         </div>
       </div>
