@@ -25,8 +25,7 @@ function AgentRoute({ children }) {
 }
 
 function RootRedirect() {
-  const { user } = useAuth()
-  return user ? <Navigate to="/dashboard" replace /> : <Landing />
+  return <Landing />
 }
 
 export default function App() {

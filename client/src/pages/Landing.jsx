@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import Logo from '../components/Logo'
 
 const features = [
@@ -32,6 +33,8 @@ const features = [
 ]
 
 export default function Landing() {
+  const { user } = useAuth()
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -39,12 +42,20 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Sign In
-            </Link>
-            <Link to="/signup" className="btn-primary text-sm py-2 px-4">
-              Get Started
-            </Link>
+            {user ? (
+              <Link to="/dashboard" className="btn-primary text-sm py-2 px-4">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                  Sign In
+                </Link>
+                <Link to="/signup" className="btn-primary text-sm py-2 px-4">
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -60,12 +71,20 @@ export default function Landing() {
           No third-party video APIs. No compromises.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/signup" className="btn-primary text-base py-3 px-8">
-            Get Started Free
-          </Link>
-          <Link to="/login" className="btn-secondary text-base py-3 px-8">
-            Sign In
-          </Link>
+          {user ? (
+            <Link to="/dashboard" className="btn-primary text-base py-3 px-8">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link to="/signup" className="btn-primary text-base py-3 px-8">
+                Get Started Free
+              </Link>
+              <Link to="/login" className="btn-secondary text-base py-3 px-8">
+                Sign In
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Hero visual */}

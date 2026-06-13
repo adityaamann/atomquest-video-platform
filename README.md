@@ -1,156 +1,119 @@
-# SupportVision — Real-Time Video Support Platform
+# AtomQuest — Real-Time Video Support Platform
 
-> Built for **AtomQuest Hackathon 1.0 Grand Finale** by Atomberg Technologies
+Browser-based live video support calls between agents and customers, with in-call chat, recording, and session analytics — no app install required.
 
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react)](https://react.dev)
-[![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=flat&logo=node.js)](https://nodejs.org)
-[![Socket.io](https://img.shields.io/badge/Socket.io-4-010101?style=flat&logo=socket.io)](https://socket.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?style=flat&logo=postgresql)](https://supabase.com)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat&logo=prisma)](https://prisma.io)
-[![WebRTC](https://img.shields.io/badge/WebRTC-Native-FF6B00?style=flat)](https://webrtc.org)
+---
 
-## What It Does
+## Links
 
-SupportVision lets support agents create instant video sessions and share an invite link — customers join in one click with no app install needed. WebRTC signaling routes through the server (no third-party video APIs), and an AI-powered summary is generated after every call using Claude Haiku.
+| | |
+|---|---|
+| **Live App** | https://atomquest-video-platform.vercel.app |
+| **GitHub** | https://github.com/adityaamann/atomquest-video-platform |
+| **Backend** | Deployed on Render (auto-deploys from GitHub) |
 
-## Live Demo
+---
 
-- Frontend: `http://localhost:5173`
-- Agent Login: `audittest@example.com` / `test1234`
-- Demo Invite: Create a session from the dashboard
+## Demo Credentials
 
-## Features
+| Role | Email | Password |
+|------|-------|----------|
+| Agent | agent@demo.com | demo123 |
 
-- ✅ **Real-time video calling** — native RTCPeerConnection, signaling via Socket.io
-- ✅ **Server-mediated media** — no P2P, no Twilio/Agora/Daily/Vonage
-- ✅ **In-call chat** with file sharing (images, PDFs, docs)
-- ✅ **Typing indicators** — live "Agent is typing…" via Socket.io
-- ✅ **Session timer** — HH:MM:SS, turns red after 30 minutes
-- ✅ **Network quality indicator** — 3-bar signal based on Socket.io ping
-- ✅ **Call recording** — client-side MediaRecorder → server upload → `.webm` file
-- ✅ **Session insights** — rule-based analytics: message counts, sentiment, top keywords
-- ✅ **Admin dashboard** — live metrics, force-end sessions, CSV export
-- ✅ **Reconnect grace period** — 30-second window, other participant not notified
-- ✅ **Role-based access control** — Agent (JWT) / Customer (invite token)
-- ✅ **Camera preview** on join page, mute/camera-off overlays, PiP layout
-- ✅ **QR code** + WhatsApp share for invite links
-- ✅ **Observability** — `/api/metrics` endpoint with live session counts
+Customers join via invite link — no account needed.
 
-## Architecture
+---
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  CLIENT LAYER (React + Vite + Tailwind)                         │
-│  Agent UI ─── Customer UI ─── Admin Dashboard                   │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │ HTTPS + WebSocket
-┌──────────────────────▼──────────────────────────────────────────┐
-│  API LAYER (Express + Helmet)                                   │
-│  JWT Auth ─── Sessions ─── Recording ─── Files ─── Summary      │
-└──────────┬────────────────────────────────────────┬────────────┘
-           │ Socket.io Rooms
-┌──────────▼───────────────────┐
-│  REAL-TIME LAYER             │
-│  join-session                │
-│  signal (WebRTC)             │
-│  media-state-change          │
-│  typing-start/stop           │
-│  send-message                │
-│  recording-stop-ack          │
-└──────────┬───────────────────┘
-           │ Prisma ORM
-┌──────────▼───────────────────┐  ┌─────────────────────────────┐
-│  DATA LAYER                  │  │  FILE STORAGE               │
-│  Supabase PostgreSQL         │  │  uploads/ (chat files)      │
-│  User, Session, Participant  │  │  recordings/ (.webm)        │
-│  ChatMessage, Recording,     │  └─────────────────────────────┘
-│  SessionSummary              │
-└──────────────────────────────┘
+## Tech Stack
 
-Media Flow: RTCPeerConnection (browser↔browser, signaling via server)
-```
+**Frontend**
+- React 18 + Vite
+- Tailwind CSS (custom light theme)
+- Socket.io Client 4
+- react-hot-toast, qrcode.react
 
-## Quick Start
+**Backend**
+- Node.js + Express
+- Socket.io 4 (server-relayed media — no P2P)
+- Prisma ORM + PostgreSQL (Supabase)
+- Multer (file + recording uploads)
+- JWT authentication
 
+**Infrastructure**
+- Frontend → Vercel
+- Backend → Render
+- Database → Supabase (PostgreSQL)
+
+---
+
+## Local Setup
+
+**Prerequisites:** Node.js 18+, a PostgreSQL database URL
+
+**1. Clone the repo**
 ```bash
-git clone <repo> && cd atomquest-video-platform
-npm run install:all
-cp server/.env.example server/.env    # fill in DATABASE_URL, JWT_SECRET
-cd server && npx prisma migrate dev --schema=../prisma/schema.prisma
-npm run dev   # from root — starts client :5173 + server :3001
+git clone https://github.com/adityaamann/atomquest-video-platform.git
+cd atomquest-video-platform
 ```
 
-## API Documentation
+**2. Install dependencies**
+```bash
+npm run install:all
+```
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register` | — | Register agent account |
-| POST | `/api/auth/login` | — | Login → JWT |
-| POST | `/api/sessions` | JWT | Create (or return existing active) session |
-| GET | `/api/sessions` | JWT | List agent's sessions |
-| GET | `/api/sessions/:id` | JWT | Session detail + transcript + summary |
-| POST | `/api/sessions/:id/end` | JWT | End session |
-| GET | `/api/join/:token` | — | Validate customer invite token |
-| POST | `/api/sessions/:id/recording/start` | JWT | Start recording |
-| POST | `/api/sessions/:id/recording/stop` | JWT | Stop recording |
-| POST | `/api/sessions/:id/recording/:rid/upload` | JWT | Upload recorded blob |
-| GET | `/api/sessions/:id/recording/download` | JWT | Download recording file |
-| GET | `/api/sessions/:id/insights` | JWT | Session insights (rule-based analytics) |
-| POST | `/api/files/upload` | JWT | Upload file attachment |
-| GET | `/api/files/:filename` | — | Serve uploaded file |
-| GET | `/api/metrics` | JWT | Live platform metrics |
-| GET | `/api/admin/sessions` | JWT | All sessions (admin) |
-| POST | `/api/admin/sessions/:id/force-end` | JWT | Force end any session |
-| GET | `/api/admin/sessions/export` | JWT | Export sessions as CSV |
-| GET | `/health` | — | Server health check |
+**3. Configure environment variables**
 
-## Environment Variables
-
-```env
-# server/.env
+Create `server/.env`:
+```
 DATABASE_URL=postgresql://...
-JWT_SECRET=at-least-32-chars-long
+JWT_SECRET=your-secret-here
 PORT=3001
 CLIENT_URL=http://localhost:5173
+```
 
-# client/.env
+Create `client/.env`:
+```
 VITE_API_URL=http://localhost:3001
 VITE_SOCKET_URL=http://localhost:3001
 ```
 
-## Deployment
-
-**Backend → Railway**
-```
-Build: cd server && npm install && npx prisma generate --schema=../prisma/schema.prisma && npx prisma migrate deploy --schema=../prisma/schema.prisma
-Start: cd server && node src/index.js
+**4. Push database schema**
+```bash
+cd server && npx prisma db push && npx prisma generate
 ```
 
-**Frontend → Vercel**
-```
-Root: client/
-Build: npm run build
-Output: dist/
+**5. Start development servers**
+```bash
+cd .. && npm run dev
 ```
 
-## Scalability Notes
+App runs at `http://localhost:5173` · API at `http://localhost:3001`
 
-- The server holds in-memory session state (`Map`) — works for single-instance deploys. For multi-instance, replace with Redis adapter for Socket.io.
-- Recordings are stored on local disk — move to S3/R2 for production.
-- Session insights are computed on-demand from DB message data — no external API needed.
-- Connection pool via Supabase pooler handles concurrent DB connections.
+---
+
+## Features
+
+1. **Agent authentication** — Secure signup/login with JWT (24h expiry), password strength meter, and auto-logout when token expires
+2. **Session creation** — Rich form with title, customer name/email, priority (Low / Medium / High / Urgent), category, description, and scheduled time
+3. **Instant invite** — Shareable invite link + QR code + one-click WhatsApp share; customers join with zero friction and no account
+4. **Server-relayed video call** — WebRTC signaling through Socket.io (not peer-to-peer), with mute/camera toggle, Picture-in-Picture self-view, and network quality indicator
+5. **In-call chat** — Real-time messaging with typing indicators, file attachments (images, PDFs, docs up to 10 MB), and smart auto-scroll that doesn't interrupt reading
+6. **Call recording** — Agent-triggered recording using the MediaRecorder API; blob uploaded to server and downloadable from session history
+7. **Session insights** — Rule-based analytics generated after every call: overall sentiment, keyword frequency, message counts, and positive/negative signal scoring — no external API required
+8. **Admin dashboard** — Live session monitor with elapsed timers, all-time platform stats (sessions, agents, messages, recordings), and paginated session history with date filters
+
+---
 
 ## Known Limitations
 
-- Recording captures only the agent's local stream (not a merged view of both participants)
-- No TURN server configured — WebRTC may fail on restrictive enterprise networks
-- In-memory session state resets on server restart
-- Session insights require at least one chat message to be meaningful
+- **Recording on mobile Safari** — `MediaRecorder` with `video/webm` is unsupported on iOS; recording is unavailable on those browsers
+- **Render cold start** — The free-tier backend spins down after inactivity; the first request after idle may take 30–60 seconds
+- **No TURN server** — WebRTC may fail on restrictive enterprise or campus networks that block direct connections
+- **Ephemeral file storage** — Chat file uploads and recordings are stored on the Render instance disk and will be lost on a server restart or redeploy
+- **Single-instance state** — Active session state is held in memory; a server restart clears in-progress sessions
 
-## What I'd Build Next
+---
 
-1. **TURN server** (Coturn) for enterprise network compatibility
-2. **Multi-party calls** — more than 2 participants using SFU (mediasoup)
-3. **Screen sharing** — `getDisplayMedia()` as a second track
-4. **Webhook notifications** — POST to agent's CRM when session ends
-5. **Redis adapter** — Socket.io state persistence across multiple server instances
+## License
+
+MIT © 2025 Aditya Aman
